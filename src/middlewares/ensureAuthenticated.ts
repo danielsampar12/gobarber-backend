@@ -1,6 +1,7 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction } from 'express';
 import { verify } from 'jsonwebtoken';
 
+import AppError from '../errors/AppError';
 import authConfig from '../config/auth';
 
 interface TokenPayload {
@@ -12,12 +13,12 @@ interface TokenPayload {
 export default function ensureAuthenticated(
   request: Request,
   response: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void {
   // Validacao do token JWT
   const authHeader = request.headers.authorization;
 
-  if (!authHeader) throw new Error('Session token is missing');
+  if (!authHeader) throw new AppError('Session token is missing', 401);
 
   const [, token] = authHeader.split(' ');
 
@@ -28,10 +29,10 @@ export default function ensureAuthenticated(
 
     request.user = {
       id: sub,
-    }
+    };
 
     return next();
   } catch {
-    throw new Error('Invalid session token');
+    throw new AppError('Invalid session token', 401);
   }
 }
